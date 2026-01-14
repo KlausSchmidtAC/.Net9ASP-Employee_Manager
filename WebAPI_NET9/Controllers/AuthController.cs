@@ -101,13 +101,15 @@ public class AuthController : ControllerBase
             tokenDescriptor.Expires?.ToString("yyyy-MM-dd HH:mm:ss UTC"));
             
         return Ok(new {
-             Message = "Token created successfully",
-                Token = jwt,
-                TokenType = "Bearer",
-                ExpiresIn = (int)TokenLifetime.TotalSeconds,
-                ExpiresAt = tokenDescriptor.Expires,
-                User = request.Username,
-                ClaimsCount = claims.Count
+                Message = "Token created successfully",
+                Data = new {
+                    Token = jwt,
+                    TokenType = "Bearer",
+                    ExpiresIn = (int)TokenLifetime.TotalSeconds,
+                    ExpiresAt = tokenDescriptor.Expires,
+                    User = request.Username,
+                    ClaimsCount = claims.Count
+                }
             });
     }
 

@@ -33,10 +33,11 @@ catch (InvalidOperationException)
     Environment.Exit(1); // Exit with error code
 }
 
+
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Listen(IPAddress.Loopback, 5100); // HTTP - nur localhost
-    serverOptions.Listen(IPAddress.Loopback, 5101, listenOptions =>
+    serverOptions.Listen(IPAddress.Any, 5100); // HTTP - nur localhost
+    serverOptions.Listen(IPAddress.Any, 5101, listenOptions =>
     {
         listenOptions.UseHttps(); // HTTPS - nur localhost  
     });
@@ -95,7 +96,7 @@ builder.Services.AddAuthentication(x =>
 });
 
 
-/**     Admin Auth without application-side policy. Only via specified claim attribute in controllers
+/**     Admin Auth without application-side policy. Only specified via claim attribute in controllers
 
 builder.Services.AddAuthorization(options =>
 {
@@ -160,7 +161,7 @@ if (app.Environment.IsDevelopment())
 
 
 app.UseAuthentication(); // IMPORTANT: Order matters! Authentication first, then Authorization
-app.UseAuthorization();
+app.UseAuthorization();    // RequiresClaimAttribute.OnAuthorizationAsync is called during this step
 
 // Health Checks Endpoints
 app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
@@ -203,20 +204,6 @@ app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthC
 });
 
 app.MapControllers();
-
-// List endpoints and their methods
-Console.WriteLine("Available Endpoints:");
-foreach (var endpoint in app.Services.GetRequiredService<Microsoft.AspNetCore.Routing.EndpointDataSource>().Endpoints)
-{
-    var routeEndpoint = endpoint as Microsoft.AspNetCore.Routing.RouteEndpoint;
-    if (routeEndpoint != null)
-    {
-        var httpMethods = routeEndpoint.Metadata
-            .OfType<Microsoft.AspNetCore.Routing.HttpMethodMetadata>()
-            .FirstOrDefault()?.HttpMethods;
-        Console.WriteLine($"Route: {routeEndpoint.RoutePattern.RawText}, Methods: {string.Join(",", httpMethods ?? new List<string>())}");
-    }
-}
 
 app.Run();
 
