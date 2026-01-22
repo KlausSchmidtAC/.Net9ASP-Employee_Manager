@@ -33,19 +33,34 @@ catch (InvalidOperationException)
     Environment.Exit(1); // Exit with error code
 }
 
+// Kestrel Server Configuration for multiple endpoints (HTTP + HTTPS)
+//  Configuaration via appsettings.{...}.json and environment variables
+/** Development: HTTP + HTTPS
+    Production: HTTPS only 
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.Listen(IPAddress.Any, 5100); // HTTP - nur localhost
-    serverOptions.Listen(IPAddress.Any, 5101, listenOptions =>
+    if (builder.Environment.IsDevelopment())
     {
-        listenOptions.UseHttps(); // HTTPS - nur localhost  
-    });
+        serverOptions.Listen(IPAddress.Any, 5100); // HTTP - Development
+        serverOptions.Listen(IPAddress.Any, 5101, listenOptions =>
+        {
+            listenOptions.UseHttps(); // HTTPS - Development  
+        });
+    }
+    else
+    {
+        // Production: Nur HTTPS
+        serverOptions.Listen(IPAddress.Any, 443, listenOptions =>
+        {
+            listenOptions.UseHttps(); // Production HTTPS auf Standard-Port
+        });
+    }
 });
+**/ 
 
 var jwtConfig = builder.Configuration.GetSection("JWTSettings");
 Console.WriteLine("Hello from .NET 9 Web Employee API!");
-
 
 
 builder.Logging.ClearProviders();
@@ -82,12 +97,22 @@ builder.Services.AddAuthentication(x =>
 }).AddJwtBearer(options =>
 {
     options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
+    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // HTTPS only in Production
+
+     var secretKey = builder.Environment.IsDevelopment()
+        ? jwtConfig["SecretKey"] // Development: from appsettings.Development.json
+        : Environment.GetEnvironmentVariable("JWT_SECRET_KEY"); // Production: from Environment Variable
+    
+    if (string.IsNullOrEmpty(secretKey))
+    {
+        throw new InvalidOperationException($"JWT SecretKey is required. Environment: {builder.Environment.EnvironmentName}");
+    }
+
     options.TokenValidationParameters = new TokenValidationParameters
     {
         ValidIssuer = jwtConfig["Issuer"],
         ValidAudience = jwtConfig["Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig["SecretKey_DevelopmentOnly"] ?? "default-secret-key-for-jwt-tokens")), // Null-safe signature for JWT tokens
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)), // Null-safe signature for JWT tokens
         ValidateIssuer = true,
         ValidateAudience = true,
         ValidateLifetime = true,
@@ -98,7 +123,7 @@ builder.Services.AddAuthentication(x =>
 
 /**     Admin Auth without application-side policy. Only specified via claim attribute in controllers
 
-builder.Services.AddAuthorization(options =>
+builder.Services.AddAuthorization(options =>cd
 {
     options.AddPolicy(Domain.Constants.IdentityData.Policies.AdminOnly, policy =>
         policy.RequireClaim(Domain.Constants.IdentityData.Claims.AdminRole, "true")); // alternative: (Domain.Constants.IdentityData.Claims.Role, Domain.Constants.IdentityData.Claims.AdminRole) 
@@ -106,6 +131,31 @@ builder.Services.AddAuthorization(options =>
 **/
 
 builder.Services.AddControllers();
+
+// Environment-basierte CORS-Konfiguration
+var corsOrigins = builder.Environment.IsDevelopment() 
+    ? new[] { // HTTP Development Origins
+        "http://localhost:8080", 
+        "http://127.0.0.1:8080", 
+        "http://localhost:3000",
+        "http://localhost:5173",    // Vite dev server
+        // HTTPS Development Origins
+        "https://localhost:8080", 
+        "https://127.0.0.1:8080", 
+        "https://localhost:3000",
+        "https://localhost:5173" }    // Vite HTTPS dev server 
+    : new[] { "https://yourdomain.com", "https://www.yourdomain.com" };  // HTTPS in Production!
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("WebPolicy", policy =>
+        policy.WithOrigins(corsOrigins)
+              .AllowAnyMethod()              // GET, POST, PATCH, DELETE
+              .AllowAnyHeader()              // Content-Type, Authorization, etc.
+              .AllowCredentials());          // for JWT Authentication
+});
+
+
 builder.Services.AddOpenApi("WebAPI");
 builder.Services.AddEndpointsApiExplorer();
 
@@ -149,12 +199,23 @@ var app = builder.Build();
 
 // Middleware Area
 
+// CORS Middleware - Before Authentication/Authorization!
+app.UseCors("WebPolicy");
+
+
 if (app.Environment.IsDevelopment())
 {   
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    // Production: HTTPS Enforcement
+    app.UseHttpsRedirection();
+    // app.UseHsts();  // HTTP Strict Transport Security
+}
+
 
 // In Production: 
 // app.UseHttpsRedirection();

@@ -26,7 +26,7 @@ public class ApplicationHealthCheck : IHealthCheck
             _memoryThresholdMB, _gcCollectionThreshold, _timeoutSeconds);
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         using var timeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(_timeoutSeconds));
         using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
@@ -57,27 +57,27 @@ public class ApplicationHealthCheck : IHealthCheck
             if (memoryMB > _memoryThresholdMB)
             {
                 _logger.LogWarning("High memory usage detected: {MemoryUsage}MB (threshold: {Threshold}MB)", memoryMB, _memoryThresholdMB);
-                return HealthCheckResult.Degraded("High memory usage", data: data);
+                return Task.FromResult(HealthCheckResult.Degraded("High memory usage", data: data));
             }
 
             // GC pressure check
             if (generation2Collections > _gcCollectionThreshold)
             {
                 _logger.LogWarning("High GC pressure detected. Gen2 collections: {Gen2Collections} (threshold: {Threshold})", generation2Collections, _gcCollectionThreshold);
-                return HealthCheckResult.Degraded("High GC pressure", data: data);
+                return Task.FromResult(HealthCheckResult.Degraded("High GC pressure", data: data));
             }
 
-            return HealthCheckResult.Healthy("Application is running normally", data: data);
+            return Task.FromResult(HealthCheckResult.Healthy("Application is running normally", data: data));
         }
         catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
         {
             _logger.LogWarning("Application health check timed out after {Timeout} seconds", _timeoutSeconds);
-            return HealthCheckResult.Unhealthy($"Health check timed out after {_timeoutSeconds} seconds");
+            return Task.FromResult(HealthCheckResult.Unhealthy($"Health check timed out after {_timeoutSeconds} seconds"));
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Application health check failed");
-            return HealthCheckResult.Unhealthy($"Application health check failed: {ex.Message}", ex);
+            return Task.FromResult(HealthCheckResult.Unhealthy($"Application health check failed: {ex.Message}", ex));
         }
     }
 }
