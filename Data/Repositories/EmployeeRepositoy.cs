@@ -71,10 +71,12 @@ public class EmployeeRepository : IEmployeeRepository
                 ((DateTime)row.Birthdate).ToString("yyyy-MM-dd"),
                 (bool)row.IsActive
             ));
+            /**
             if (employee.Count() == 0)
             {
                 return OperationResult<IEnumerable<Employee>>.FailureResult("No employees found.");
             }
+            **/ 
             return OperationResult<IEnumerable<Employee>>.SuccessResult(employee);
         }
     }

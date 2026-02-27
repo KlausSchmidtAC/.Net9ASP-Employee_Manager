@@ -187,7 +187,7 @@ builder.Services.AddSingleton<IDatabaseInitializer>(provider =>
     new SqlServerDatabaseInitializer(
         provider.GetRequiredService<ILogger<SqlServerDatabaseInitializer>>(),
         dbConfig["ServerIP"] ?? "localhost",
-        dbConfig["DatabaseName"] ?? "Mitarbeiter", 
+        dbConfig["DatabaseName"] ?? "employees", 
         dbConfig["Port"] ?? "3306",
         dbConfig["Username"] ?? "root",
         dbConfig["Password"] ?? ""

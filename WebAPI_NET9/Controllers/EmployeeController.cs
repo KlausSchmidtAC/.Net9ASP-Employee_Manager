@@ -87,7 +87,7 @@ namespace WebAPI_NET9.Controllers
             {
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
-                    _logger.LogDebug("Sorted employees: {EmployeeList}",
+                    _logger.LogDebug("Sorted employees: {}",
                         string.Join(", ", operationResult.Data.ToList()));
                 }
                 else

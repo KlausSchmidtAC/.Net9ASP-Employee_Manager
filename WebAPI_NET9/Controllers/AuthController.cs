@@ -59,7 +59,7 @@ public class AuthController : ControllerBase
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
             new(JwtRegisteredClaimNames.Sub, request.Username),
             new(JwtRegisteredClaimNames.Email, request.Email),
-            new("userId", request.UserId.ToString())
+            // new("userId", request.UserId.ToString())
         };
 
         
