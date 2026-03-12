@@ -1,0 +1,170 @@
+/* ===== SEARCH SECTION ===== */
+.search-section {
+  border-left: 4px solid #4CAF50;
+  padding: 16px 20px !important;
+  margin-bottom: 0 !important;
+}
+
+.change-section {
+  border-left: 4px solid #667eea;
+  padding: 16px 20px !important;
+  margin-bottom: 0 !important;
+}
+
+/* ===== OPS LAYOUT (Formular links / Buttons rechts) ===== */
+.ops-card {
+  height: 100%;
+}
+
+.ops-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.ops-form {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ops-fields-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Fields */
+.ops-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ops-field label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #555;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ops-input {
+  padding: 8px 12px;
+  border: 1.5px solid #e1e5e9;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  color: #2c3e50;
+  background: #fafbfc;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.ops-input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+  background: white;
+}
+
+.ops-select {
+  padding: 8px 36px 8px 12px;
+  border: 1.5px solid #e1e5e9;
+  border-radius: 20px;
+  background: #fafbfc;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  appearance: none;
+  background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="%23666"><path d="M7 10l5 5 5-5z"/></svg>');
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 18px;
+  width: 100%;
+}
+
+.ops-select:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.12);
+}
+
+/* Toggle Row */
+.ops-toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+}
+
+/* Actions rechte Spalte */
+.ops-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 130px;
+  border-left: 1px solid #e1e5e9;
+  padding-left: 18px;
+}
+
+.ops-actions-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
+}
+
+.ops-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.ops-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ops-btn.primary {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.ops-btn.primary:hover:not(:disabled) {
+  background: #c8e6c9;
+}
+
+.ops-btn.danger {
+  background: #fce4ec;
+  color: #b71c1c;
+}
+.ops-btn.danger:hover {
+  background: #f8bbd0;
+}
+
+@media (max-width: 600px) {
+  .ops-layout {
+    flex-direction: column;
+  }
+  .ops-actions {
+    border-left: none;
+    border-top: 1px solid #e1e5e9;
+    padding-left: 0;
+    padding-top: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .ops-fields-row {
+    grid-template-columns: 1fr;
+  }
+}

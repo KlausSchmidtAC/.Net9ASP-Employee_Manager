@@ -1,0 +1,371 @@
+/* ===== AUTH SECTION ===== */
+.auth-section {
+  border-left: 4px solid #667eea;
+  padding: 16px 20px !important;
+  margin-bottom: 16px !important;
+}
+
+/* ===== TOKEN INFO CARD (2-Spalten) ===== */
+.token-info-card {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.token-info-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.token-info-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+  border-left: 1px solid #e1e5e9;
+  padding-left: 20px;
+}
+
+/* Status Row */
+.token-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.token-status-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.badge-active {
+  background: #d4edda;
+  color: #155724;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-inactive {
+  background: #f8d7da;
+  color: #721c24;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.token-expiry {
+  font-size: 0.75rem;
+  color: #888;
+}
+
+/* Details Grid */
+.token-details-grid {
+  display: grid;
+  grid-template-columns: 56px 1fr;
+  gap: 3px 10px;
+  margin-bottom: 10px;
+  font-size: 0.82rem;
+}
+
+.td-label {
+  font-weight: 600;
+  color: #666;
+  white-space: nowrap;
+}
+
+.td-value {
+  color: #2c3e50;
+  word-break: break-word;
+}
+
+/* Raw Token */
+.token-raw-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.btn-token-toggle {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  padding: 2px 12px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  color: #555;
+  transition: all 0.2s;
+}
+
+.btn-token-toggle:hover {
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.token-raw-code {
+  font-size: 0.68rem;
+  background: #f4f6f8;
+  padding: 6px 8px;
+  border-radius: 6px;
+  word-break: break-all;
+  display: block;
+}
+
+/* Action Buttons rechte Spalte */
+.token-actions-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 2px 0;
+}
+
+.token-action-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.token-action-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.token-action-btn.validate {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.token-action-btn.validate:hover:not(:disabled) {
+  background: #c8e6c9;
+}
+
+.token-action-btn.copy {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+.token-action-btn.copy:hover:not(:disabled) {
+  background: #bbdefb;
+}
+
+.token-action-btn.public {
+  background: #f3e5f5;
+  color: #6a1b9a;
+}
+.token-action-btn.public:hover {
+  background: #e1bee7;
+}
+
+.token-action-btn.protected {
+  background: #fff3e0;
+  color: #e65100;
+}
+.token-action-btn.protected:hover:not(:disabled) {
+  background: #ffe0b2;
+}
+
+.token-action-divider {
+  margin: 4px 0;
+  border-color: #e1e5e9;
+}
+
+@media (max-width: 600px) {
+  .token-info-card {
+    flex-direction: column;
+  }
+  .token-info-right {
+    border-left: none;
+    border-top: 1px solid #e1e5e9;
+    padding-left: 0;
+    padding-top: 12px;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
+.auth-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.auth-input {
+  padding: 12px 15px;
+  border: 2px solid #e1e5e9;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.login-btn {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.login-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #45a049, #3d8b40);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.login-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.auth-test-buttons {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.test-btn {
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+}
+
+.test-btn.public {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  color: white;
+}
+
+.test-btn.public:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1976D2, #1565C0);
+  transform: translateY(-1px);
+}
+
+.test-btn.protected {
+  background: linear-gradient(135deg, #FF9800, #F57C00);
+  color: white;
+}
+
+.test-btn.protected:hover:not(:disabled) {
+  background: linear-gradient(135deg, #F57C00, #E65100);
+  transform: translateY(-1px);
+}
+
+.test-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.token-display {
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #dee2e6;
+}
+
+.token-display h4 {
+  margin: 0 0 10px 0;
+  color: #495057;
+  font-size: 14px;
+}
+
+.token-display code {
+  display: block;
+  background: #2c3e50;
+  color: #ecf0f1;
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-family: 'Courier New', 'Monaco', monospace;
+  font-size: 12px;
+  word-break: break-all;
+  line-height: 1.4;
+}
+
+/* ===== CUSTOM CLAIMS ===== */
+.custom-claims-container {
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 15px;
+  background-color: #f8f9fa;
+}
+
+.custom-claim-row {
+  margin-bottom: 10px;
+}
+
+.custom-claim-row:last-child {
+  margin-bottom: 0;
+}
+
+.jwt-preview {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 4px;
+  padding: 15px;
+  font-size: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.predefined-claims {
+  border-top: 1px solid #e9ecef;
+  padding-top: 10px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  .auth-form {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-test-buttons {
+    flex-direction: column;
+  }
+}
