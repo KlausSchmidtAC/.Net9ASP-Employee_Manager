@@ -243,7 +243,8 @@ namespace WebAPI_NET9.Controllers
                 return BadRequest(new { Message = operationResult.ErrorMessage });
             }
             _logger.LogInformation("New employee created: {Employee}", employee.ToString());
-            return CreatedAtAction(nameof(GetEmployee), new { id = employee.id }, new { Message = "New employee created", Data = employee });
+            var newEmployee = new Employee(operationResult.Data, employee.FirstName, employee.LastName, employee.BirthDate, employee.IsActive);
+            return CreatedAtAction(nameof(GetEmployee), new { id = operationResult.Data }, new { Message = "New employee created", Data = newEmployee });
         }
 
         /// <summary>

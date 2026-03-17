@@ -27,17 +27,17 @@ public class EmployeeService : IEmployeeService
         return _employeeRepository.Search(search, cancellationToken);
     }
 
-    public Task<OperationResult> CreateEmployee(Employee employee, CancellationToken cancellationToken = default)
+    public Task<OperationResult<int>> CreateEmployee(Employee employee, CancellationToken cancellationToken = default)
     {
         return _employeeRepository.Add(employee, cancellationToken);
     }
 
-    public Task<OperationResult> UpdateEmployee(int id, Employee employee, CancellationToken cancellationToken = default)
+    public Task<OperationResult<int>> UpdateEmployee(int id, Employee employee, CancellationToken cancellationToken = default)
     {
         return _employeeRepository.Update(id, employee, cancellationToken);
     }
 
-    public Task<OperationResult> DeleteEmployee(int id, CancellationToken cancellationToken = default)
+    public Task<OperationResult<int>> DeleteEmployee(int id, CancellationToken cancellationToken = default)
     {
         return _employeeRepository.Delete(id, cancellationToken);
     }

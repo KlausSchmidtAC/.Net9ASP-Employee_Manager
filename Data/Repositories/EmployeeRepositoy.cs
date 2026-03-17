@@ -190,24 +190,24 @@ public class EmployeeRepository : IEmployeeRepository
         }
     }
 
-    public async Task<OperationResult> Add(Employee? employee, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<int>> Add(Employee? employee, CancellationToken cancellationToken = default)
     {
         DateOnly date;
-
+        int newId;
         try
         {
             if (employee == null || employee == default(Employee) || employee.FirstName == null || employee.LastName == null || employee.BirthDate == null)
             {
-                return OperationResult.FailureResult("Employee data is corrupted or empty.");
+                return OperationResult<int>.FailureResult("Employee data is corrupted or empty.");
             }
 
             if (string.IsNullOrWhiteSpace(employee.FirstName) || string.IsNullOrWhiteSpace(employee.LastName))
             {
-                return OperationResult.FailureResult("A first name and last name are required.");
+                return OperationResult<int>.FailureResult("A first name and last name are required.");
             }
             else if (string.IsNullOrWhiteSpace(employee.BirthDate.ToString()))
             {
-                return OperationResult.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
+                return OperationResult<int>.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
             }
             else if (
                 DateOnly.TryParseExact(
@@ -218,11 +218,11 @@ public class EmployeeRepository : IEmployeeRepository
                     out DateOnly dateParsed
                 ) == false)
             {
-                return OperationResult.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
+                return OperationResult<int>.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
             }
             else if (await CheckDuplicateAsync(employee))
             {
-                return OperationResult.FailureResult("An employee with the same first name, last name and birth date already exists.");
+                return OperationResult<int>.FailureResult("An employee with the same first name, last name and birth date already exists.");
             }
             else
             {
@@ -231,7 +231,7 @@ public class EmployeeRepository : IEmployeeRepository
         }
         catch (FormatException ex)
         {
-            return OperationResult.FailureResult($"Error processing birth date: invalid characters entered! {ex.Message}");
+            return OperationResult<int>.FailureResult($"Error processing birth date: invalid characters entered! {ex.Message}");
         }
         
         using (var connection = await _connectionFactory.CreateConnection())
@@ -239,7 +239,7 @@ public class EmployeeRepository : IEmployeeRepository
             // Connection is already opened by SqlConnectionFactory
             var Sql_maxID_command = new CommandDefinition("SELECT MAX(Id) FROM Employees;", cancellationToken: cancellationToken, commandTimeout: _commandTimeout);
             var maxId = await connection.ExecuteScalarAsync<int>(Sql_maxID_command);
-            int newId = maxId + 1;
+                newId = maxId + 1;
 
             var sql_Add_command = new CommandDefinition("INSERT INTO Employees (Id,FirstName, LastName, Birthdate, IsActive) VALUES (@Id, @FirstName, @LastName, @Birthdate, @IsActive);",
                 new
@@ -256,25 +256,25 @@ public class EmployeeRepository : IEmployeeRepository
 
         // Console.WriteLine($"Mitarbeiter mit ID {newId} hinzugefügt.");
         }
-        return OperationResult.SuccessResult();
+        return OperationResult<int>.SuccessResult(newId);
     }
 
-    public async Task<OperationResult> Update(int id, Employee? employee, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<int>> Update(int id, Employee? employee, CancellationToken cancellationToken = default)
     {
         try
         {
             if (employee == null)
             {
-                return OperationResult.FailureResult("Employee data is corrupted or empty.");
+                return OperationResult<int>.FailureResult("Employee data is corrupted or empty.");
             }
 
             if (string.IsNullOrWhiteSpace(employee.FirstName) || string.IsNullOrWhiteSpace(employee.LastName))
             {
-                return OperationResult.FailureResult("A first name and last name are required.");
+                return OperationResult<int>.FailureResult("A first name and last name are required.");
             }
             else if (string.IsNullOrWhiteSpace(employee.BirthDate.ToString()))
             {
-                return OperationResult.FailureResult("A birth date in format 'yyyy-MM-dd' is required.");
+                return OperationResult<int>.FailureResult("A birth date in format 'yyyy-MM-dd' is required.");
             }
             else if (string.IsNullOrWhiteSpace(employee.BirthDate) ||
                 DateOnly.TryParseExact(
@@ -285,12 +285,12 @@ public class EmployeeRepository : IEmployeeRepository
                     out DateOnly dateParsed
                 ) == false)
             {
-                return OperationResult.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
+                return OperationResult<int>.FailureResult("A valid birth date in format 'yyyy-MM-dd' is required.");
             }
         }
         catch (FormatException ex)
         {
-            return OperationResult.FailureResult($"Error processing birth date: invalid characters entered! // {ex.Message}");
+            return OperationResult<int>.FailureResult($"Error processing birth date: invalid characters entered! // {ex.Message}");
         }
 
         using (var connection = await _connectionFactory.CreateConnection())
@@ -316,7 +316,7 @@ public class EmployeeRepository : IEmployeeRepository
 
             if (duplicateCount > 0)
             {
-                return OperationResult.FailureResult("Another employee with the same data already exists under a different ID");
+                return OperationResult<int>.FailureResult("Another employee with the same data already exists under a different ID");
             }
         }
 
@@ -337,16 +337,16 @@ public class EmployeeRepository : IEmployeeRepository
 
             if (updateresult == 0)
             {
-                return OperationResult.FailureResult($"Employee could not be updated because ID = {id} does not exist");
+                return OperationResult<int>.FailureResult($"Employee could not be updated because ID = {id} does not exist");
             }
         }
         
         Console.WriteLine($"Employee with ID {id} updated.");
-        return OperationResult.SuccessResult();
+        return OperationResult<int>.SuccessResult(id);
     }
 
 
-    public async Task<OperationResult> Delete(int id, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<int>> Delete(int id, CancellationToken cancellationToken = default)
     {   
 
        
@@ -360,11 +360,11 @@ public class EmployeeRepository : IEmployeeRepository
             if (deletedRows > 0)
             {
                 Console.WriteLine($"Employee with ID {id} deleted.");
-                return OperationResult.SuccessResult();
+                return OperationResult<int>.SuccessResult(id);
             }
             else
             {
-                return OperationResult.FailureResult($"Employee could not be deleted because ID = {id} does not exist.");
+                return OperationResult<int>.FailureResult($"Employee could not be deleted because ID = {id} does not exist.");
             }
         }
     }
