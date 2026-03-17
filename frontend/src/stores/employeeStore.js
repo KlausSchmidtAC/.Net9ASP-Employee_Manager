@@ -125,7 +125,7 @@ export const useEmployeeStore = defineStore('employee', {
                 return { success: true, count: employeeList.length };
             } catch (error) {
                 this.error = error.message;
-                return { success: false, error: error.message };
+                return { success: false, message: error.message };
             } finally {
                 this.isLoading = false;
             }
@@ -152,7 +152,7 @@ export const useEmployeeStore = defineStore('employee', {
             } catch (error) {
                 console.error(`❌ Store.loadEmployeeById(${id}) Error:`, error);
                 this.error = error.message;
-                return { success: false, error: error.message };
+                return { success: false, message: error.message };
             }
             finally {
                 this.isLoading = false;
@@ -183,8 +183,8 @@ export const useEmployeeStore = defineStore('employee', {
                 return { success: true, employee: newEmployee }
             } catch (err) {
                 console.error('🏪 Store: Error creating employee:', err)
-                this.error.value = err.message
-                return { success: false, error: err.message }
+                this.error = err.message
+                return { success: false, message: err.message }
             } finally {
                 this.isCreating = false;
             }
@@ -207,14 +207,15 @@ export const useEmployeeStore = defineStore('employee', {
                 }
 
                 console.log(`🏪 Store: Deleting employee ${id} (Admin authenticated)...`)
+                const deletedEmployee = this.employees.find(emp => emp.id === id) // Save before deletion
                 await this._repository.delete(id)
 
-                this.employees = this.employees.filter(emp => emp.id !== id)
-                return { success: true }
+                this.employees = this.employees.filter(emp => emp.id !== id) // Remove deleted employee from state
+                return { success: true, employee: deletedEmployee, message: `Employee ${id} deleted successfully` }
             } catch (err) {
                 console.error(`🏪 Store: Error deleting employee ${id}:`, err)
-                this.error.value = err.message
-                return { success: false, error: err.message }
+                this.error = err.message
+                return { success: false, message: err.message }
             } finally {
                 this.isDeleting = false;
             }
@@ -238,7 +239,7 @@ export const useEmployeeStore = defineStore('employee', {
                 }
 
                 console.log(`🏪 Store: Updating employee ${id} (Admin authenticated)...`)
-                const employeeDataModel = new Employee(employeeData.id, employeeData.FirstName, employeeData.LastName, employeeData.BirthDate, employeeData.IsActive)
+                const employeeDataModel = new Employee(id, employeeData.FirstName, employeeData.LastName, employeeData.BirthDate, employeeData.IsActive)
                 const updatedEmployee = await this._repository.update(id, employeeDataModel)
 
                 const index = this.employees.findIndex(emp => emp.id === id)
@@ -246,11 +247,11 @@ export const useEmployeeStore = defineStore('employee', {
                     this.employees[index] = updatedEmployee
                 }
 
-                return { success: true, employee: updatedEmployee }
+                return { success: true, employee: this.employees[index], message: `Employee ${id} updated successfully` }
             } catch (err) {
                 console.error(`🏪 Store: Error updating employee ${id}:`, err)
-                this.error.value = err.message
-                return { success: false, error: err.message }
+                this.error = err.message
+                return { success: false, message: err.message }
             } finally {
                 this.isUpdating = false;
             }
@@ -274,7 +275,7 @@ export const useEmployeeStore = defineStore('employee', {
         } catch(error){
             console.error(`❌ Store.searchEmployees("${searchterm}") Error:`, error);
             this.error = error.message;
-            return { success: false, error: error.message};
+            return { success: false, message: error.message};
         } finally{
             this.isLoading = false;
         }

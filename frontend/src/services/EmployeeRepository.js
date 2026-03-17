@@ -103,7 +103,7 @@ async delete(id) {
     console.log(`📤 Repository: Deleting employee with ID ${id}...`);
 
     // ✅ HTTP DELETE /api/employees/{id}
-    await apiClient.delete(`/employees/${id}`);  // ← /Employee/${id} → /employees/${id}
+    await apiClient.delete(`/employees/${id}`);  
     console.log(`✅ employee with ID ${id} deleted successfully.`);
   } catch (error) {
     console.error(`❌ Repository.delete(${id}) Error:`, error); 

@@ -96,8 +96,13 @@ const onExecuteChanges = async () => {
       }
       let op = changeSettings.value.changeType
       let opText = op === 'add' ? 'Add' : op === 'delete' ? 'Delete' : 'Patch'
-      let extra = op === 'delete' ? ' The deleted employee is shown below.' : ''
+      let extra = op === 'delete' ? ' The deleted employee is shown below.' : op === 'add' ? ' The new employee is shown below.' : ' The updated employee is shown below.'
       emit('success', `${opText} operation successful!${extra}` + (result.message ? ' ' + result.message : ''))
+    }
+    else {
+      const msg = (result.message || 'Unknown error')
+        .replace("'yyyy-MM-dd'", "'TT.MM.JJJJ'")
+      emit('error', `Operation failed: ${msg}`)
     }
   } catch (err) {
     emit('error', `Operation failed: ${err.message}`)
@@ -111,7 +116,7 @@ const executePostPutDeleteRequest = async () => {
   } else if (changeSettings.value.changeType === 'delete') {
     if (!changeSettings.value.employeeId) throw new Error('Employee ID is required for deletion')
     const deleteResult = await employeeStore.deleteEmployee(changeSettings.value.employeeId)
-    return { success: deleteResult.success, message: deleteResult.message }
+    return { success: deleteResult.success, data: deleteResult.employee, message: deleteResult.message }
   } else if (changeSettings.value.changeType === 'patch') {
     if (!changeSettings.value.employeeId) throw new Error('Employee ID is required for patching')
     const patchResult = await employeeStore.updateEmployee(changeSettings.value.employeeId, changeSettings.value.employeeData)
