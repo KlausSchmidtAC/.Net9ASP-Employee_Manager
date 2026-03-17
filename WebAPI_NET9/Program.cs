@@ -6,13 +6,11 @@ using Data.Repositories;
 using Data.SQL_DB;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Text;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.Options; 
 using OpenTelemetry.Logs;
 using OpenTelemetry.Exporter;
-using System.Net;
 using OpenTelemetry.Resources;
 
 
@@ -155,12 +153,27 @@ builder.Services.AddCors(options =>
               .AllowCredentials());          // for JWT Authentication
 });
 
-
-builder.Services.AddOpenApi("WebAPI");
+// OpenAPI / Swagger Configuration
+// builder.Services.AddOpenApi("WebAPI"); // Alternative: AddSwaggerGen() + AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>() for more control and customization of Swagger-UI and OpenAPI documentation
 builder.Services.AddEndpointsApiExplorer();
 
 // Configure Swagger, JWT Token Service for Swagger-OPEN API configured as Singleton (only used at startup)
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen( c => 
+{
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
+    {
+        Version = "v1",
+        Title = "Employee API",
+        Description = "A simple ASP.NET Core Web API for managing employees with JWT Authentication and OpenAPI documentation.",
+        Contact = new Microsoft.OpenApi.Models.OpenApiContact
+        {
+            Name = "K. Schmidt", 
+            Email = "klaus.schmidt1@rwth-aachen.de"}
+    });
+    c.EnableAnnotations(); 
+}); 
+
+            
 builder.Services.AddSingleton<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 
 
@@ -199,13 +212,13 @@ var app = builder.Build();
 
 // Middleware Area
 
-// CORS Middleware - Before Authentication/Authorization!
+// CORS Middleware - Always before Authentication/Authorization!
 app.UseCors("WebPolicy");
 
 
 if (app.Environment.IsDevelopment())
 {   
-    app.MapOpenApi();
+    // app.MapOpenApi(); // Alternative: app.UseSwagger() + app.UseSwaggerUI() for more control and customization of Swagger-UI and OpenAPI documentation
     app.UseSwagger();
     app.UseSwaggerUI();
 }

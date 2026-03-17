@@ -6,10 +6,12 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using Domain; 
+using Swashbuckle.AspNetCore.Annotations;
 
 
 [ApiController]
 [Route("api/auth")]
+[SwaggerTag("Authentication – JWT Token management")]
 public class AuthController : ControllerBase
 {
     private static readonly TimeSpan TokenLifetime = TimeSpan.FromHours(0.25);
@@ -23,7 +25,14 @@ public class AuthController : ControllerBase
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
     }
 
+    ///<summary>Public test endpoint</summary>
+    ///<remarks> 
+    ///This endpoint for testing is accessible without authentication.
+    ///</remarks>
     [HttpGet("public")]
+    [AllowAnonymous]
+    [SwaggerOperation(Summary = "Public test endpoint", OperationId = "Auth_Public")]
+    [SwaggerResponse(200, "Public endpoint accessed successfully")]
     public IActionResult PublicEndpoint(CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Public endpoint called.");
@@ -35,8 +44,16 @@ public class AuthController : ControllerBase
             });
     }
 
+    /// <summary>Protected Testing-Endpoint</summary>
+    /// <remarks>
+    /// Requires a valid JWT Bearer token in the Authorization header.
+    /// Use the /api/auth/token endpoint to generate a token with custom claims for testing.
+    /// </remarks>
     [HttpGet("protected")]
     [Authorize]
+    [SwaggerOperation(OperationId = "Auth_Protected")]
+    [SwaggerResponse(200, "Protected endpoint accessed successfully")]
+    [SwaggerResponse(401, "Unauthorized – valid JWT required")]
     public IActionResult ProtectedEndpoint(CancellationToken cancellationToken = default)
     {   
         _logger.LogInformation("Protected endpoint called.");
@@ -47,8 +64,19 @@ public class AuthController : ControllerBase
             });
     }
 
+    /// <summary>Generate JWT-Token</summary>
+    /// <remarks>
+    /// Creates a JWT token based on the provided user data and custom claims.
+    /// Creates a signed HS256 Bearer token. Token validity: 15 minutes.
+    /// </remarks>
     [HttpPost("token")]
-    public IActionResult CreateToken([FromBody]TokenGenerationRequest request, CancellationToken cancellationToken = default) 
+    [AllowAnonymous]
+    [SwaggerOperation(
+    OperationId = "Auth_CreateToken"
+    )]
+    [SwaggerResponse(200, "Token created successfully")]
+    [SwaggerResponse(400, "Invalid request data")]
+    public IActionResult CreateToken([FromBody][SwaggerRequestBody("Token request data", Required = true)] TokenGenerationRequest request, CancellationToken cancellationToken = default) 
     {
         var jwtConfig = _configuration.GetSection("JWTSettings");
         var tokenHandler = new JwtSecurityTokenHandler();
@@ -112,5 +140,4 @@ public class AuthController : ControllerBase
                 }
             });
     }
-
-    }
+}

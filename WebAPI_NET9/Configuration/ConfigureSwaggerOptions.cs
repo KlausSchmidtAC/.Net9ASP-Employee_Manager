@@ -1,13 +1,16 @@
-namespace WebAPI_NET9;
+namespace WebAPI_NET9.Configuration;
 
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
+
 public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
 {
     public void Configure(SwaggerGenOptions options)
     {
+        options.EnableAnnotations();
+
         options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {
             In = ParameterLocation.Header,
@@ -18,19 +21,11 @@ public class ConfigureSwaggerOptions : IConfigureOptions<SwaggerGenOptions>
             BearerFormat = "JWT"
         });
 
-        options.AddSecurityRequirement(new OpenApiSecurityRequirement
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    }
-                },
-                Array.Empty<string>()
-            }
-        });
+        options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "WebAPI_NET9.xml"));
+        options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, "Domain.xml"));
+
+        // NOTE: No global AddSecurityRequirement here.
+        // Security is applied per-endpoint via AllowAnonymousOperationFilter.
+        options.OperationFilter<AllowAnonymousOperationFilter>();
     }
 }

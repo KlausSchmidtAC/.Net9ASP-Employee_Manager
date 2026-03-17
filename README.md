@@ -25,25 +25,18 @@ WebAPI_Net9ASP-Mitarbeiterverwaltung/
 
 ## 🖥️ Frontend – Vue.js 3
 
-**UI Layout (Desktop)**
-
-```
-+-----------------------------------------------------------------+
-|  Employee Management API Tester                  [ Logout ]    |
-+-----------------------------------------------------------------+
-|  Session & Token Info                                           |
-|  Status: Active  Exp: 15:02  |  Validate   Copy Token         |
-|  User / Email / Role / Admin  |  Public Route  Protected Route |
-|  [ Show Token ]               |                                |
-+-------------------------------+---------------------------------+
-|  Search & Filter              |  Add & Delete & Patch          |
-|  Filter:  [ Dropdown ]        |  Operation: [ Dropdown ]       |
-|  [ Search ]   [ Clear ]       |  Fields...  [ Execute ] [Clear]|
-+-------------------------------+---------------------------------+
-|  Results                                                        |
-|  [ Employee Card ]  [ Employee Card ]  [ Employee Card ]        |
-+-----------------------------------------------------------------+
-```
+<table>
+  <tr>
+    <td align="center" width="40%">
+      <b>Login</b><br/>
+      <img src="docs/images/login.png" alt="Login Screen" width="300"/>
+    </td>
+    <td align="center" width="60%">
+      <b>Employee Dashboard</b><br/>
+      <img src="docs/images/dashboard.png" alt="Employee Dashboard" width="440"/>
+    </td>
+  </tr>
+</table>
 
 ### Frontend Features
 
