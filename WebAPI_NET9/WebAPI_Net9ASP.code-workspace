@@ -2,9 +2,6 @@
 	"folders": [
 		{
 			"path": ".."
-		},
-		{
-			"path": "../../../../Vue_Projects/mitgliederverwaltung_VueJS"
 		}
 	],
 	"settings": {}
