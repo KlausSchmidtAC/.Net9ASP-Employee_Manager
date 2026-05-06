@@ -165,44 +165,45 @@ MySQL Database  <--  Connection Factory (1-3 ms/request)
 
 ---
 
-## 🚀 Full Stack Quick Start
+## 🚀 Quick Start
 
-### 1. Prerequisites
+### Option A – Docker (recommended)
 
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+
+```bash
+git clone https://github.com/KlausSchmidtAC/WebAPI_Net9ASP-Mitarbeiterverwaltung.git
+cd WebAPI_Net9ASP-Mitarbeiterverwaltung
+
+docker-compose up --build
+```
+
+All services start automatically in the correct order:
+
+| Service | URL | Description |
+|---|---|---|
+| Backend API | `http://localhost:5100` | ASP.NET Core Web API |
+| Seq Logs UI | `http://localhost:8081` | Structured logs (Login: `admin` / `Admin2026!`) |
+| MySQL | `localhost:3307` | Accessible from host (e.g. MySQL Workbench) |
+
+> The database and tables are **created automatically** on first start.
+
+```bash
+docker-compose down        # stop all containers
+docker-compose down -v     # stop containers + delete volumes (DB data)
+```
+
+---
+
+### Option B – Local Development
+
+**Prerequisites:**
 - [.NET 9 SDK](https://dotnet.microsoft.com/download)
 - [Node.js 18+](https://nodejs.org/)
 - MySQL Server running locally
+- Seq running locally on `localhost:5099`
 
-### 2. Database Setup
-
-```sql
-CREATE DATABASE IF NOT EXISTS Employees;
-USE Employees;
-
-CREATE TABLE IF NOT EXISTS employees (
-    Id        INT AUTO_INCREMENT PRIMARY KEY,
-    FirstName VARCHAR(100) NOT NULL,
-    LastName  VARCHAR(100) NOT NULL,
-    Birthdate DATE NOT NULL,
-    IsActive  BOOLEAN NOT NULL DEFAULT TRUE
-);
-```
-
-Configure `WebAPI_NET9/appsettings.json`:
-
-```json
-{
-  "Database": {
-    "ServerIP": "localhost",
-    "DatabaseName": "Employees",
-    "Port": "3306",
-    "Username": "root",
-    "Password": "your_password"
-  }
-}
-```
-
-### 3. Backend Setup
+#### 1. Backend
 
 ```bash
 git clone https://github.com/KlausSchmidtAC/WebAPI_Net9ASP-Mitarbeiterverwaltung.git
@@ -210,18 +211,26 @@ cd WebAPI_Net9ASP-Mitarbeiterverwaltung
 dotnet restore
 
 cd WebAPI_NET9
-dotnet user-secrets init
-dotnet user-secrets set "JwtSettings:SecretKey" "MySecureProductionJWTKeyFor2026Testing123456789ABCDEFUffel123"
-dotnet user-secrets set "JwtSettings:Issuer"    "http://localhost:5100"
-dotnet user-secrets set "JwtSettings:Audience"  "http://localhost:5100"
-
 dotnet run
 # API:     http://localhost:5100
 # Swagger: https://localhost:5101/swagger
 # Health:  http://localhost:5100/health
 ```
 
-### 4. Frontend Setup
+Configure `WebAPI_NET9/appsettings.Development.json`:
+```json
+{
+  "Database": {
+    "ServerIP": "localhost",
+    "DatabaseName": "employees",
+    "Port": "3306",
+    "Username": "webapi_user",
+    "Password": "your_password"
+  }
+}
+```
+
+#### 2. Frontend
 
 ```bash
 cd frontend
@@ -230,11 +239,41 @@ npm run serve
 # App: http://localhost:8080
 ```
 
-### 5. Optional – Observability (Seq)
+> The frontend communicates with the backend on `http://localhost:5100` – regardless of whether Option A or B is used.
 
-```bash
-docker run -d --name seq -e ACCEPT_EULA=Y -p 5099:5099 -p 80:80 datalust/seq:latest
-# Logs: http://localhost:5099
+---
+
+## 🐳 Docker Architecture
+
+```
+                    ┌─────────────────────────────────────┐
+                    │         Docker Network              │
+                    │                                     │
+Browser/k6          │  ┌──────────┐    ┌──────────────┐  │
+localhost:5100 ─────┼─►│ backend  │───►│    mysql     │  │
+localhost:8081 ─────┼─►│  :5100   │    │    :3306     │  │
+localhost:3307 ─────┼─►│          │    └──────────────┘  │
+                    │  │          │    ┌──────────────┐  │
+                    │  │          │───►│     seq      │  │
+                    │  └──────────┘    │  :5341/:80   │  │
+                    │                  └──────────────┘  │
+                    └─────────────────────────────────────┘
+```
+
+### Docker Services
+
+| Service | Image | Internal Port | Host Port |
+|---|---|---|---|
+| `backend` | `webapi-backend:latest` (built locally) | `5100` | `5100` |
+| `mysql` | `mysql:8.0` | `3306` | `3307` |
+| `seq` | `datalust/seq:latest` | `5341` (OTLP), `80` (UI) | `5341`, `8081` |
+
+### Startup Order (automatic via `depends_on`)
+
+```
+mysql (healthy) ──┐
+                  ├──► backend starts
+seq (started)  ──┘
 ```
 
 ---
@@ -242,9 +281,9 @@ docker run -d --name seq -e ACCEPT_EULA=Y -p 5099:5099 -p 80:80 datalust/seq:lat
 ## 🔍 Health Monitoring
 
 ```bash
-curl http://localhost:5100/health        # Overall status
-curl http://localhost:5100/health/ready  # Kubernetes readiness probe
-curl http://localhost:5100/health/live   # Kubernetes liveness probe
+curl http://localhost:5100/health        # Overall status (App + DB)
+curl http://localhost:5100/health/ready  # Kubernetes readiness probe (DB only)
+curl http://localhost:5100/health/live   # Kubernetes liveness probe (App only)
 ```
 
 ---

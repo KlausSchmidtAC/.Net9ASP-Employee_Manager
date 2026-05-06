@@ -48,7 +48,7 @@ public class SqlConnectionFactory : IConnectionFactory
             }
         }
 
-        // Initialization required - use semaphore for thread safety
+        // Initialization required - use semaphore for thread safety!!
         await _semaphore.WaitAsync();
         try
         {
@@ -63,16 +63,16 @@ public class SqlConnectionFactory : IConnectionFactory
 
             // Perform initialization once
             _logger.LogInformation("Starting database initialization process");
-            var initialized = await _databaseInitializer.InitializeDatabase();
+            _isInitialized = await _databaseInitializer.InitializeDatabase();
             
-            if (!initialized)
+            if (!_isInitialized)
             {
                 _logger.LogError("Database initialization failed in SqlConnectionFactory");
                 throw new InvalidOperationException("Database initialization failed in SqlConnectionFactory.");
             }
             
             // Mark DB as initialized to skip future checks
-            _isInitialized = true;
+            
             _logger.LogInformation("Database initialization completed successfully");
         }
         finally

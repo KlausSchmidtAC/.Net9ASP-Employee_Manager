@@ -1,6 +1,7 @@
 using WebAPI_NET9;
 using WebAPI_NET9.Configuration;
 using WebAPI_NET9.HealthChecks;
+using WebAPI_NET9.Models;
 using Application;
 using Data.Repositories; 
 using Data.SQL_DB;
@@ -48,10 +49,10 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     }
     else
     {
-        // Production: Nur HTTPS
+        // Production: HTTPS only
         serverOptions.Listen(IPAddress.Any, 443, listenOptions =>
         {
-            listenOptions.UseHttps(); // Production HTTPS auf Standard-Port
+            listenOptions.UseHttps(); // Production HTTPS on standard port
         });
     }
 });
@@ -63,12 +64,15 @@ Console.WriteLine("Hello from .NET 9 Web Employee API!");
 
 builder.Logging.ClearProviders();
 
+// In Docker: Console logging so exceptions are visible in container logs
+// In Development: OTLP to Seq (localhost:5099)
+
 // OTLP Exporter instead of Console-Logging
 builder.Logging.AddOpenTelemetry(options =>
 {
     options.SetResourceBuilder(ResourceBuilder.CreateEmpty().AddService("WebAPI_NET9_EmployeeService").AddAttributes(new Dictionary<string, object>
     {
-        ["deployment.environment"] = "development",
+        ["deployment.environment"] = builder.Environment.EnvironmentName,
         ["service.version"] = "1.0.0"
     }));
 
@@ -78,11 +82,12 @@ builder.Logging.AddOpenTelemetry(options =>
     options.AddOtlpExporter(
     exporter =>
     {
-        exporter.Endpoint = new Uri("http://localhost:5099/ingest/otlp/v1/logs");
+        exporter.Endpoint = new Uri(builder.Configuration["Seq:OtlpEndpoint"]!);
         exporter.Protocol = OtlpExportProtocol.HttpProtobuf;
         exporter.Headers = "";
     });
 }); 
+
 
 Console.WriteLine("Hello from OpenTelemetry logging setup!");
 
@@ -97,9 +102,9 @@ builder.Services.AddAuthentication(x =>
     options.SaveToken = true;
     options.RequireHttpsMetadata = !builder.Environment.IsDevelopment(); // HTTPS only in Production
 
-     var secretKey = builder.Environment.IsDevelopment()
-        ? jwtConfig["SecretKey"] // Development: from appsettings.Development.json
-        : Environment.GetEnvironmentVariable("JWT_SECRET_KEY"); // Production: from Environment Variable
+     var secretKey = (builder.Environment.IsDevelopment() || builder.Environment.EnvironmentName == "Docker")
+        ? jwtConfig["SecretKey"]                                        // Development/Docker: from appsettings.{ENV}.json
+        : Environment.GetEnvironmentVariable("JWT_SECRET_KEY");         // Production: from environment variable
     
     if (string.IsNullOrEmpty(secretKey))
     {
@@ -130,7 +135,7 @@ builder.Services.AddAuthorization(options =>cd
 
 builder.Services.AddControllers();
 
-// Environment-basierte CORS-Konfiguration
+// Environment-based CORS configuration
 var corsOrigins = builder.Environment.IsDevelopment() 
     ? new[] { // HTTP Development Origins
         "http://localhost:8080", 
@@ -222,7 +227,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-else
+else if (!builder.Environment.IsEnvironment("Docker"))
 {
     // Production: HTTPS Enforcement
     app.UseHttpsRedirection();
@@ -242,28 +247,24 @@ app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks
 {
     ResponseWriter = async (context, report) =>
     {
-        var response = new
-        {
-            Status = report.Status.ToString(),
-            TotalDuration = report.TotalDuration.TotalMilliseconds,
-            Checks = report.Entries.Select(entry => new
-            {
-                Name = entry.Key,
-                Status = entry.Value.Status.ToString(),
-                Duration = entry.Value.Duration.TotalMilliseconds,
-                Description = entry.Value.Description,
-                Data = entry.Value.Data,
-                Exception = entry.Value.Exception?.Message,
-                Tags = entry.Value.Tags
-            }).ToArray()
-        };
+        var response = new HealthCheckResponse(
+            Status: report.Status.ToString(),
+            TotalDuration: report.TotalDuration.TotalMilliseconds,
+            Checks: report.Entries.Select(entry => new HealthCheckEntry(
+                Name: entry.Key,
+                Status: entry.Value.Status.ToString(),
+                Duration: entry.Value.Duration.TotalMilliseconds,
+                Description: entry.Value.Description,
+                Data: entry.Value.Data,
+                Exception: entry.Value.Exception?.Message,
+                Tags: entry.Value.Tags
+            )).ToArray()
+        );
 
         context.Response.ContentType = "application/json";
-        await context.Response.WriteAsync(System.Text.Json.JsonSerializer.Serialize(response, new System.Text.Json.JsonSerializerOptions
-        {
-            WriteIndented = true,
-            PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-        }));
+        await context.Response.WriteAsync(
+            System.Text.Json.JsonSerializer.Serialize(response, AppJsonSerializerContext.Default.HealthCheckResponse)
+        );
     }
 });
 

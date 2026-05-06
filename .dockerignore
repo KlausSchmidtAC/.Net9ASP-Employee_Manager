@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/logs/
+**/.git/
+**/.vs/
+**/node_modules/
+frontend/
+Tests/
+*.md
+*.sln.DotSettings

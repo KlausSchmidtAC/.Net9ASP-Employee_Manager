@@ -1,0 +1,90 @@
+
+# ─────────────────────────────────────────────────────────────
+# docker-compose.yml  –  Schritt 2: Backend + MySQL
+# Starten:  docker-compose up
+# Stoppen:  docker-compose down
+# ─────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Backend ───────────────────────────────────────────────
+  backend:
+    # Image-Name (wird lokal gebaut UND so getaggt)
+    image: webapi-backend:latest
+
+    # Image direkt aus dem Dockerfile bauen:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: webapi_backend
+
+    # Host-Port : Container-Port
+    # Von außen (Windows/Browser) erreichbar unter localhost:5100
+    ports:
+      - "5100:5100"
+
+    # Umgebungsvariablen – bestimmt welche appsettings.{ENV}.json geladen wird
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+
+    # Backend startet erst wenn MySQL healthy ist
+    depends_on:
+      mysql:
+        condition: service_healthy
+      seq: 
+        condition: service_started
+
+    # Healthcheck: /health prüft App + DB
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5100/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  # ── MySQL ──────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_db
+
+    # Backend erreicht MySQL intern über Docker-DNS: "mysql:3306"
+    # 3307 extern (falls Port 3306 vom lokalen MySQL belegt ist)
+    ports:
+      - "3307:3306"
+
+    environment:
+      - MYSQL_ROOT_PASSWORD=SecureRootPw2026!
+      - MYSQL_DATABASE=employees
+      - MYSQL_USER=webapi_user
+      - MYSQL_PASSWORD=SecureWebAPI2026!
+
+    # Daten bleiben erhalten wenn Container neu gestartet wird
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+    # Docker wartet bis MySQL wirklich bereit ist (nicht nur gestartet)
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pSecureRootPw2026!"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+  
+  # ── Seq ──────────────────────────────────────────────────
+  seq:
+    image: datalust/seq:latest
+    container_name: seq_logs
+    environment: 
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=Admin2026!
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    volumes: 
+      - seq_data:/data
+
+# ── Volumes ────────────────────────────────────────────────
+volumes:
+  mysql_data:   # persistente MySQL-Daten
+  seq_data:     # persistente Seq-Daten
